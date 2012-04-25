@@ -16,6 +16,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewOrderMessageHandler", "N
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HitchinExchange.Core", "HitchinExchange.Core\HitchinExchange.Core.csproj", "{DA6F7A96-E81B-44FD-B526-959FFCF7A95C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{D999E2B5-9588-4B46-8815-5DD318D49517}"
+	ProjectSection(SolutionItems) = preProject
+		External\quickfix_net.dll = External\quickfix_net.dll
+		External\quickfix_net_messages.dll = External\quickfix_net_messages.dll
+		External\RabbitMQ.Client.dll = External\RabbitMQ.Client.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

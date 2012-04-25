@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using QuickFix;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using HitchinExchange.Core;
+using QuickFix;
 
 namespace HitchinExchange.Console
 {
     class Program
     {
+        static Exchange m_exchange;
         static void Main(string[] args)
         {
 
@@ -23,27 +24,15 @@ namespace HitchinExchange.Console
 
             messageHandlerMediator.StartHandlers();
 
-            #region QuickFix
-            SessionSettings settings = new SessionSettings(@"Exchange.cfg");
+            m_exchange = new Exchange();
 
-            Exchange application = new Exchange();
-
-            FileStoreFactory storeFactory = new FileStoreFactory(settings);
-
-            ScreenLogFactory logFactory = new ScreenLogFactory(settings);
-
-            MessageFactory messageFactory = new DefaultMessageFactory();
-
-            SocketAcceptor acceptor = new SocketAcceptor(application, storeFactory, settings, logFactory, messageFactory);
-
-            acceptor.start();
+            m_exchange.Endpoint.Start();
 
             System.Console.WriteLine("press <enter> to quit");
 
             System.Console.Read();
 
-            acceptor.stop(); 
-            #endregion
+            m_exchange.Endpoint.Stop();
         }
     }
 }

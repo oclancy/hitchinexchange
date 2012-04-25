@@ -39,13 +39,13 @@
   <ItemGroup>
     <Reference Include="quickfix_net, Version=1.0.3748.13264, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\quickfix_net.dll</HintPath>
+      <HintPath>..\External\quickfix_net.dll</HintPath>
     </Reference>
     <Reference Include="quickfix_net_messages">
-      <HintPath>..\quickfix_net_messages.dll</HintPath>
+      <HintPath>..\External\quickfix_net_messages.dll</HintPath>
     </Reference>
     <Reference Include="RabbitMQ.Client">
-      <HintPath>..\RabbitMQ.Client.dll</HintPath>
+      <HintPath>..\External\RabbitMQ.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -66,7 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NewOrderHandler.cs" />
-    <Compile Include="NewOrderSingleMessageCracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

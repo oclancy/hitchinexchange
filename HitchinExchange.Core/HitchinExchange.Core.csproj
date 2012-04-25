@@ -32,7 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="quickfix_net">
-      <HintPath>..\quickfix_net.dll</HintPath>
+      <HintPath>..\External\quickfix_net.dll</HintPath>
+    </Reference>
+    <Reference Include="quickfix_net_messages">
+      <HintPath>..\External\quickfix_net_messages.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -44,13 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Clients\MessageEndpoint.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="IProcessFixMessages.cs" />
     <Compile Include="IsolatingCatalog.cs" />
     <Compile Include="IsolatingComposablePart.cs" />
     <Compile Include="IsolatingComposablePartDefinition.cs" />
     <Compile Include="IsolationAttribute.cs" />
-    <Compile Include="MessageCrackerEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

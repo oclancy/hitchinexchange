@@ -32,13 +32,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="quickfix_net">
-      <HintPath>..\quickfix_net.dll</HintPath>
+      <HintPath>..\External\quickfix_net.dll</HintPath>
     </Reference>
     <Reference Include="quickfix_net_messages">
-      <HintPath>..\quickfix_net_messages.dll</HintPath>
+      <HintPath>..\External\quickfix_net_messages.dll</HintPath>
     </Reference>
     <Reference Include="RabbitMQ.Client">
-      <HintPath>..\RabbitMQ.Client.dll</HintPath>
+      <HintPath>..\External\RabbitMQ.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -64,6 +64,9 @@
       <Project>{F9AE3BC5-AEA1-4748-A7D6-AEAB0F61314B}</Project>
       <Name>NewOrderMessageHandler</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

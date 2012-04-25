@@ -35,10 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="quickfix_net">
-      <HintPath>..\quickfix_net.dll</HintPath>
+      <HintPath>..\External\quickfix_net.dll</HintPath>
     </Reference>
     <Reference Include="quickfix_net_messages">
-      <HintPath>..\quickfix_net_messages.dll</HintPath>
+      <HintPath>..\External\quickfix_net_messages.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
