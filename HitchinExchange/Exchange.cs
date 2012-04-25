@@ -5,16 +5,19 @@ using System.Text;
 using RabbitMQ.Client;
 using QuickFix;
 using System.Reflection;
+using HitchinExchange.Core;
 
 namespace HitchinExchange
 {
-    public class Exchange : Application, IDisposable
+    public class Exchange : IDisposable
     {
         private bool m_disposed = false;
         private string m_appName;
 
         RabbitMQ.Client.IConnection m_mqClientConn;
         RabbitMQ.Client.IModel m_mqModel;
+
+        public MessageEndpoint Endpoint { get; set; }
 
         public Exchange() 
         {
@@ -30,54 +33,28 @@ namespace HitchinExchange
             m_mqModel.QueueDeclare("Exchange", true, false, false, null);
 
             m_mqModel.QueueBind("Exchange", "Hitchin", string.Empty);
+
+            CreateFixEndpoint();
         }
 
-        public void fromAdmin(QuickFix.Message value, QuickFix.SessionID sessionId)
+        private void CreateFixEndpoint()
         {
-            Console.WriteLine(string.Format("{0}:fromAdmin Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
+            Endpoint = new MessageEndpoint(@"Exchange.cfg",
+                                            "Exchange",
+                                             OnMessage);
         }
 
-        public void fromApp(QuickFix.Message value, QuickFix.SessionID sessionId)
+        void OnMessage(Message message, SessionID sessionId)
         {
-            Console.WriteLine(string.Format("{0}:fromApp Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
-
             var props = m_mqModel.CreateBasicProperties();
-            props.Headers = new Dictionary<object,object>();
+            props.Headers = new Dictionary<object, object>();
             props.Headers.Add("QFSessionId", sessionId.ToString());
 
-            m_mqModel.BasicPublish(new PublicationAddress(ExchangeType.Topic, 
+            m_mqModel.BasicPublish(new PublicationAddress(ExchangeType.Topic,
                                                           "Hitchin",
-                                                          string.Format("{0}.{1}.{2}", "HITCHIN", value.GetType().Name, sessionId)),
-                                    props,                                    
-                                    Encoding.Default.GetBytes(value.ToString()));
-
-        }
-
-        public void onCreate(QuickFix.SessionID value)
-        {
-            Console.WriteLine(string.Format("{0}:Creating session: {0}", m_appName, value));
-        }
-
-        public void onLogon(QuickFix.SessionID value)
-        {
-            Console.WriteLine(string.Format("{0}:Session logged in: {0}", m_appName, value));
-        }
-
-        public void onLogout(QuickFix.SessionID value)
-        {
-            Console.WriteLine(string.Format("{0}:Session logged out: {0}", m_appName, value));
-        }
-
-        public void toAdmin(QuickFix.Message value, QuickFix.SessionID sessionId)
-        {
-            Console.WriteLine(string.Format("{0}:toAdmin Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
-        }
-
-        public void toApp(QuickFix.Message value, QuickFix.SessionID sessionId)
-        {
-            Console.WriteLine(string.Format("{0}:toApp Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
-
-            
+                                                          string.Format("{0}.{1}.{2}", "HITCHIN", message.GetType().Name, sessionId)),
+                                    props,
+                                    Encoding.Default.GetBytes(message.ToString()));
         }
 
         public void Dispose()
@@ -92,12 +69,14 @@ namespace HitchinExchange
                 if (isDisposing)
                 {
                     // Free other state (managed objects).
+                    m_mqModel.Close();
+                    m_mqClientConn.Close();
+                    Endpoint.Stop();
                 }
 
-                m_mqModel.Close();
-                m_mqClientConn.Close();
                 // Set large fields to null.
                 m_disposed = true;
+                GC.SuppressFinalize(this);
             }
         }
 
