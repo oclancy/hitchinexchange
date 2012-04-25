@@ -1,0 +1,14 @@
+syntax: glob
+*.dll
+*.pdb
+*.exe
+*.manifest
+*.cache
+*.obj
+*.user
+*/obj/*
+*/bin/*
+*.sdf
+*.suo
+*.log
+*/Debug/*
