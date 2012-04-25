@@ -1,0 +1,8 @@
+syntax: glob
+Debug/*
+*/Debug/*
+*.dll
+*.exe
+*.sdf
+*.suo
+*/bin/*
