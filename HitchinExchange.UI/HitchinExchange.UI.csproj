@@ -116,6 +116,12 @@
   <ItemGroup>
     <Folder Include="Commands\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HitchinExchange.Core\HitchinExchange.Core.csproj">
+      <Project>{DA6F7A96-E81B-44FD-B526-959FFCF7A95C}</Project>
+      <Name>HitchinExchange.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

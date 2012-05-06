@@ -6,6 +6,7 @@ using RabbitMQ.Client;
 using QuickFix;
 using System.Reflection;
 using HitchinExchange.Core;
+using HitchinExchange.Core.Clients;
 
 namespace HitchinExchange
 {
@@ -17,29 +18,56 @@ namespace HitchinExchange
         RabbitMQ.Client.IConnection m_mqClientConn;
         RabbitMQ.Client.IModel m_mqModel;
 
-        public MessageEndpoint Endpoint { get; set; }
+        public FixAcceptor Endpoint { get; set; }
+
+        public MessageEndpoint MsgEndpoint { get; set; }
 
         public Exchange() 
         {
             m_appName = Assembly.GetEntryAssembly().GetName().Name;
             var cf = new ConnectionFactory();
 
-            m_mqClientConn = cf.CreateConnection();
+            //m_mqClientConn = cf.CreateConnection();
 
-            m_mqModel = m_mqClientConn.CreateModel();
+            //m_mqModel = m_mqClientConn.CreateModel();
 
-            m_mqModel.ExchangeDeclare("Hitchin", ExchangeType.Topic);
+            //m_mqModel.ExchangeDeclare("Hitchin", ExchangeType.Topic);
 
-            m_mqModel.QueueDeclare("Exchange", true, false, false, null);
+            //m_mqModel.QueueDeclare("Exchange", true, false, false, null);
 
-            m_mqModel.QueueBind("Exchange", "Hitchin", string.Empty);
+            //m_mqModel.QueueBind("Exchange", "Hitchin", string.Empty);
 
             CreateFixEndpoint();
+
+            CreateMqSubscriber();
+        }
+
+        private void CreateMqSubscriber()
+        {
+            MsgEndpoint = new MessageEndpoint("Hitchin");
+
+            MsgEndpoint.MessageReceived += MsgEndpoint_MessageReceived;
+
+            MsgEndpoint.RegisterPublishType(typeof(QuickFix42.ExecutionReport), "Messages.ExecutionReport.42");
+
+            MsgEndpoint.Subscribe("Exchange", "Messages.NewOrderSingle.*");
+
+            //MsgEndpoint.Subscribe("Exchange", "Message.ExecutionReport.*");
+        }
+
+        void MsgEndpoint_MessageReceived( Message e)
+        {
+            Console.WriteLine(e.ToString());
+
+            //if (e.getField(QuickFix.MsgType.FIELD) == "D")
+            //{
+                Session.sendToTarget(e);
+            //}
         }
 
         private void CreateFixEndpoint()
         {
-            Endpoint = new MessageEndpoint(@"Exchange.cfg",
+            Endpoint = new FixAcceptor(@"Exchange.cfg",
                                             "Exchange",
                                              OnMessage);
         }
@@ -50,11 +78,7 @@ namespace HitchinExchange
             props.Headers = new Dictionary<object, object>();
             props.Headers.Add("QFSessionId", sessionId.ToString());
 
-            m_mqModel.BasicPublish(new PublicationAddress(ExchangeType.Topic,
-                                                          "Hitchin",
-                                                          string.Format("{0}.{1}.{2}", "HITCHIN", message.GetType().Name, sessionId)),
-                                    props,
-                                    Encoding.Default.GetBytes(message.ToString()));
+
         }
 
         public void Dispose()
