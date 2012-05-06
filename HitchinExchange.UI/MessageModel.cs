@@ -8,12 +8,15 @@ using System.Windows;
 using System.ComponentModel;
 using System.Xml.Linq;
 using System.IO;
+using System.Threading.Tasks;
+using HitchinExchange.Core.Clients;
+using System.Threading;
 
 namespace HitchinExchange.UI
 {
     public class MessageModel : INotifyPropertyChanged
     {
-        private static string m_dataDictDir = @"e:\quickfix\spec\fix";
+        private static string m_dataDictDir = @"d:\quickfix\spec";
         private XDocument m_currentFixDoc;
         private IDictionary<string, FieldType> m_fieldTypes;
         private IEnumerable<MessagePropertyDescription> m_currentMessageProperties;
@@ -151,5 +154,37 @@ namespace HitchinExchange.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        MessageEndpoint m_messageEndpoint;
+        CancellationToken m_cancelToken;
+
+        public MessageModel()
+        {
+            var css = new CancellationTokenSource();
+            m_cancelToken = css.Token;
+
+            m_messageEndpoint = new MessageEndpoint("Hitchin");
+
+            m_messageEndpoint.RegisterPublishType(typeof(QuickFix42.NewOrderSingle),
+                                                   "Messages.NewOrderSingle.42");
+
+
+            m_messageEndpoint.Subscribe("GUI", "Messages.ExecutionReport.*");
+
+            m_messageEndpoint.MessageReceived += m_messageEndpoint_MessageReceived;
+
+            Task.Factory.StartNew( () =>
+                {
+                    while (!m_cancelToken.IsCancellationRequested)
+                    {
+                        m_messageEndpoint.Publish(new QuickFix42.NewOrderSingle());
+                        Thread.Sleep(1000);
+                    }
+                }, m_cancelToken);
+        }
+
+        void m_messageEndpoint_MessageReceived(QuickFix.Message msg)
+        {
+            Console.WriteLine("Message received {0}",msg);
+        }
     }
 }

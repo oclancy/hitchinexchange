@@ -2,79 +2,107 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using RabbitMQ.Client.MessagePatterns;
+using System.Threading.Tasks;
 using QuickFix;
+using System.Threading;
 
-namespace HitchinExchange.Core
+namespace HitchinExchange.Core.Clients
 {
-    public class MessageEndpoint : Application
+    public class MessageEndpoint : IDisposable
     {
-        SocketAcceptor m_acceptor;
-        Action<Message, SessionID> m_onMessageCallBack;
-        string m_appName;
+        public delegate void MessageHandler(Message msg);
 
-        public MessageEndpoint(string configFile, 
-                               string appName,
-                               Action<Message, SessionID> onMessageCallBack)
+        Dictionary<string, Subscription> m_subsDict;
+        Dictionary<Type, string> m_typeQueueDict;
+        CancellationTokenSource m_tokenSource;
+        IModel m_mqModel;
+        IConnection m_mqClientConn;
+
+        public event MessageHandler MessageReceived;
+
+        private string m_exchange;
+
+        public MessageEndpoint(string exchange)
         {
-            m_appName = appName;
+            m_exchange = exchange;
+            m_subsDict = new Dictionary<string, Subscription>();
+            m_typeQueueDict = new Dictionary<Type, string>();
+            m_tokenSource = new CancellationTokenSource();
 
-            SessionSettings settings = new SessionSettings(configFile);
+            var cf = new ConnectionFactory();
 
-            FileStoreFactory storeFactory = new FileStoreFactory(settings);
-
-            ScreenLogFactory logFactory = new ScreenLogFactory(settings);
-
-            MessageFactory messageFactory = new DefaultMessageFactory();
-
-            m_acceptor = new SocketAcceptor(this, storeFactory, settings, logFactory, messageFactory);
+            m_mqClientConn = cf.CreateConnection();
+            m_mqModel = m_mqClientConn.CreateModel();
         }
 
-        public void fromAdmin(QuickFix.Message value, QuickFix.SessionID sessionId)
+        public void Subscribe(string queueName, string key)
         {
-            Console.WriteLine(string.Format("{0}:fromAdmin Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
+            m_mqModel.QueueDeclare(queueName, false, false, false, null);
+
+            m_mqModel.QueueBind(queueName, m_exchange, key);
+
+            var subs = new RabbitMQ.Client.MessagePatterns.Subscription(m_mqModel, queueName);
+
+            m_subsDict.Add(queueName, subs);
+
+            Task.Factory.StartNew((o) =>
+                {
+                    Console.WriteLine("Waiting for msgs...");
+                    BasicDeliverEventArgs args;
+                    do
+                    {
+                        if (subs.Next(10000, out args))
+                        {
+                            QuickFix.Message msg = new QuickFix.Message(Encoding.Default.GetString(args.Body));
+
+                            if (MessageReceived != null)
+                                MessageReceived(msg);
+
+                            Console.WriteLine(msg);
+                        }
+                    }
+                    while (!m_tokenSource.Token.IsCancellationRequested);
+
+                }, m_tokenSource.Token, TaskCreationOptions.LongRunning);
         }
 
-        public void fromApp(QuickFix.Message value, QuickFix.SessionID sessionId)
+        public void RegisterPublishType(Type type, string routingKey)
         {
-            Console.WriteLine(string.Format("{0}:fromApp Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
-
-            m_onMessageCallBack(value, sessionId);
+            m_typeQueueDict.Add(type, routingKey);
         }
 
-        public void onCreate(QuickFix.SessionID value)
+        public void Publish(Message msg)
         {
-            Console.WriteLine(string.Format("{0}:Creating session: {0}", m_appName, value));
+            IBasicProperties props = m_mqModel.CreateBasicProperties();
+
+            var routingKey = m_typeQueueDict[msg.GetType()];
+
+            m_mqModel.BasicPublish(m_exchange, routingKey, props, Encoding.Default.GetBytes(msg.ToString()));
         }
 
-        public void onLogon(QuickFix.SessionID value)
+        #region Disposal
+        public void Dispose()
         {
-            Console.WriteLine(string.Format("{0}:Session logged in: {0}", m_appName, value));
+            Dispose(true);
         }
 
-        public void onLogout(QuickFix.SessionID value)
+        public void Dispose(bool isDisposing)
         {
-            Console.WriteLine(string.Format("{0}:Session logged out: {0}", m_appName, value));
+            if (isDisposing)
+            {
+                m_mqModel.Dispose();
+                GC.SuppressFinalize(this);
+            }
+
         }
 
-        public void toAdmin(QuickFix.Message value, QuickFix.SessionID sessionId)
+        protected void Finalize()
         {
-            Console.WriteLine(string.Format("{0}:toAdmin Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
-        }
-
-        public void toApp(QuickFix.Message value, QuickFix.SessionID sessionId)
-        {
-            Console.WriteLine(string.Format("{0}:toApp Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
-        }
-
-        public void Start()
-        {
-            m_acceptor.start();
-        }
-
-        public void Stop()
-        {
-            m_acceptor.stop();
-        }
+            Dispose(false);
+        } 
+        #endregion
     }
 }
-

@@ -15,6 +15,10 @@ namespace HitchinExchange.Console
         static void Main(string[] args)
         {
 
+            m_exchange = new Exchange();
+
+            m_exchange.Endpoint.Start(); 
+            
             var dirCat = new DirectoryCatalog(@".\");
             var isolatingCatalog = new IsolatingCatalog(dirCat);
             var container = new CompositionContainer(isolatingCatalog);
@@ -23,10 +27,6 @@ namespace HitchinExchange.Console
             container.ComposeParts(messageHandlerMediator);
 
             messageHandlerMediator.StartHandlers();
-
-            m_exchange = new Exchange();
-
-            m_exchange.Endpoint.Start();
 
             System.Console.WriteLine("press <enter> to quit");
 

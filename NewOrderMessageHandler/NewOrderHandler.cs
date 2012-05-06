@@ -11,64 +11,51 @@ using System.Threading.Tasks;
 using System.Reactive.Linq;
 using QuickFix;
 using QuickFix42;
+using HitchinExchange.Core.Clients;
 
 namespace NewOrderMessageHandler
 {
     [Isolation(typeof(IProcessFixMessages), Isolate = true)]
     public class NewOrderHandler : MarshalByRefObject, IProcessFixMessages
     {
-        MessageEndpoint m_endPoint;
+        private FixInitiator m_fixEndPoint;
+        private MessageEndpoint m_messageEndpoint;
         
         private void OnMessage(QuickFix.Message message, SessionID sessionId)
         {
             // message received from RSP
+            Console.WriteLine("Received order");
+
+            Session.sendToTarget(new QuickFix42.ExecutionReport());
+
+            Console.WriteLine("Execution Report published");
+
+            //Session.sendToTarget(new QuickFix42.Quote());
             
         }
 
         public void Start()
         {
-             m_endPoint = new MessageEndpoint("NewOrderMessageHandler.cfg",
+             m_fixEndPoint = new FixInitiator("NewOrderMessageHandler.cfg",
                                               GetType().Name,
                                               OnMessage);
 
-             var t1 = Task.Factory.StartNew(() =>
-                {
-                    var cf = new ConnectionFactory();
+             //m_messageEndpoint.MessageReceived += new MessageEndpoint.MessageHandler(m_messageEndpoint_MessageReceived);
+             //m_messageEndpoint.Subscribe("NewOrderHandler", "Message.NewOrderSingle.*");
 
-                    using (var m_mqClientConn = cf.CreateConnection())
-                    {
-                        using (var m_mqModel = m_mqClientConn.CreateModel())
-                        {
-                            m_mqModel.QueueDeclare("NewOrderHandler", true, false, false, null);
-
-                            m_mqModel.QueueBind("NewOrderHandler", "Hitchin", string.Format("{0}.{1}.{2}", "HITCHIN", "NewOrderSingle", "#"));
-
-                            var subs = new RabbitMQ.Client.MessagePatterns.Subscription(m_mqModel, "NewOrderHandler");
-
-                            Console.WriteLine("Waiting for msgs...");
-
-                            BasicDeliverEventArgs args;
-                            while (subs.Next(15000, out args) == true)
-                            {
-                                QuickFix.Message msg = new QuickFix.Message(Encoding.Default.GetString(args.Body));
-
-                                Console.WriteLine(msg);
-
-                                // send to correct rsp
-                                Session.sendToTarget(msg, msg.getField(SenderCompID.FIELD), msg.getField(TargetCompID.FIELD));
-                            }
-                        }
-                    }
-                });
-
-            t1.ContinueWith(t=> Console.WriteLine(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-            t1.ContinueWith(t => Console.WriteLine("No Problems"), TaskContinuationOptions.NotOnFaulted);
-            
+             //m_messageEndpoint.RegisterPublishType(typeof(QuickFix42.ExecutionReport), "Message.ExecutionReport.42");
         }
+
+        void m_messageEndpoint_MessageReceived(QuickFix.Message msg)
+        {
+  
+        }
+
+
 
         public void Dispose()
         {
-            
+            throw new NotImplementedException();
         }
     }
 }
