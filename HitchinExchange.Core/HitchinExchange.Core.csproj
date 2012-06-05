@@ -52,7 +52,9 @@
   <ItemGroup>
     <Compile Include="Clients\FixInitiator.cs" />
     <Compile Include="Clients\FixAcceptor.cs" />
+    <Compile Include="Clients\IMessageEndpoint.cs" />
     <Compile Include="Clients\MessageEndpoint.cs" />
+    <Compile Include="Cracker\MessageCracker.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="IProcessFixMessages.cs" />
     <Compile Include="IsolatingCatalog.cs" />
@@ -61,6 +63,13 @@
     <Compile Include="IsolationAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="HitchinExchange.Core.dll.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

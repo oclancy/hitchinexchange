@@ -51,8 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exchange.cs" />
-    <Compile Include="IDisposeable.cs" />
+    <Compile Include="IExchange.cs" />
     <Compile Include="MessageHandlerMediator.cs" />
+    <Compile Include="MessageRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,9 +61,9 @@
       <Project>{DA6F7A96-E81B-44FD-B526-959FFCF7A95C}</Project>
       <Name>HitchinExchange.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NewOrderMessageHandler\NewOrderMessageHandler.csproj">
+    <ProjectReference Include="..\NewOrderMessageHandler\Rsp.csproj">
       <Project>{F9AE3BC5-AEA1-4748-A7D6-AEAB0F61314B}</Project>
-      <Name>NewOrderMessageHandler</Name>
+      <Name>Rsp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

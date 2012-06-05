@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace HitchinExchange.Core.Clients
 {
-    public class MessageEndpoint : IDisposable
+    public class MessageEndpoint : IMessageEndpoint
     {
         public delegate void MessageHandler(Message msg);
 
@@ -40,15 +40,18 @@ namespace HitchinExchange.Core.Clients
 
         public void Subscribe(string queueName, string key)
         {
-            m_mqModel.QueueDeclare(queueName, false, false, false, null);
+            if (!m_subsDict.ContainsKey(queueName))
+            {
+                m_mqModel.QueueDeclare(queueName, false, false, false, null);
 
-            m_mqModel.QueueBind(queueName, m_exchange, key);
+                var subs = new Subscription(m_mqModel, queueName);
 
-            var subs = new RabbitMQ.Client.MessagePatterns.Subscription(m_mqModel, queueName);
+                m_subsDict.Add(queueName, subs);
 
-            m_subsDict.Add(queueName, subs);
+                m_mqModel.QueueBind(queueName, m_exchange, key);
 
-            Task.Factory.StartNew((o) =>
+                // this is startin a new task for each subscription
+                Task.Factory.StartNew((o) =>
                 {
                     Console.WriteLine("Waiting for msgs...");
                     BasicDeliverEventArgs args;
@@ -67,6 +70,8 @@ namespace HitchinExchange.Core.Clients
                     while (!m_tokenSource.Token.IsCancellationRequested);
 
                 }, m_tokenSource.Token, TaskCreationOptions.LongRunning);
+            }
+            
         }
 
         public void RegisterPublishType(Type type, string routingKey)

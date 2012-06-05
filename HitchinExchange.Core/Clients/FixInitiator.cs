@@ -6,20 +6,24 @@ using QuickFix;
 
 namespace HitchinExchange.Core
 {
+    public class MessageAndSession : EventArgs
+    {
+        public Message Message{get;set;}
+        public SessionID SessionId { get; set; }
+    }
+
     public class FixInitiator : Application
     {
         SocketInitiator m_initiator;
-        Action<Message, SessionID> m_onMessageCallBack;
 
         string m_appName;
 
+        public event EventHandler<MessageAndSession> MessageReceived;
+
         public FixInitiator(string configFile, 
-                            string appName,
-                            Action<Message, SessionID> onMessageCallBack)
+                            string appName)
         {
             m_appName = appName;
-
-            m_onMessageCallBack = onMessageCallBack;
 
             SessionSettings settings = new SessionSettings(configFile);
 
@@ -41,7 +45,8 @@ namespace HitchinExchange.Core
         {
             Console.WriteLine(string.Format("{0}:fromApp Called with: {1}, from {2}", m_appName, value.GetType().Name, sessionId));
 
-            m_onMessageCallBack(value, sessionId);
+            if(MessageReceived != null)
+                MessageReceived(this, new MessageAndSession() { Message = value, SessionId = sessionId });
         }
 
         public void onCreate(QuickFix.SessionID value)

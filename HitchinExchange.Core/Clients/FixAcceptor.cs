@@ -11,6 +11,8 @@ namespace HitchinExchange.Core
         SocketAcceptor m_acceptor;
         Action<Message, SessionID> m_onMessageCallBack;
 
+        List<SessionID> m_loggedOnSessions = new List<SessionID>();
+
         string m_appName;
 
         public FixAcceptor(string configFile, 
@@ -52,11 +54,13 @@ namespace HitchinExchange.Core
         public void onLogon(QuickFix.SessionID value)
         {
             Console.WriteLine(string.Format("{0}:Session logged in: {0}", m_appName, value));
+            m_loggedOnSessions.Add(value);
         }
 
         public void onLogout(QuickFix.SessionID value)
         {
             Console.WriteLine(string.Format("{0}:Session logged out: {0}", m_appName, value));
+            m_loggedOnSessions.Remove(value);
         }
 
         public void toAdmin(QuickFix.Message value, QuickFix.SessionID sessionId)
@@ -77,6 +81,19 @@ namespace HitchinExchange.Core
         public void Stop()
         {
             m_acceptor.stop();
+        }
+
+        public bool HasSessions
+        {
+            get
+            {
+                return  m_loggedOnSessions.Count > 0;
+            }
+        }
+
+        public void SendMessage(Message e)
+        {
+            m_loggedOnSessions.ForEach( sess => Session.sendToTarget(e,sess));
         }
     }
 }

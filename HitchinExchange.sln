@@ -12,7 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HitchinExchange_Native", "H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HitchinExchange.Console", "HitchinExchange.Console\HitchinExchange.Console.csproj", "{14BDC67F-1590-47FE-BB68-DF27F93DA199}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewOrderMessageHandler", "NewOrderMessageHandler\NewOrderMessageHandler.csproj", "{F9AE3BC5-AEA1-4748-A7D6-AEAB0F61314B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsp", "NewOrderMessageHandler\Rsp.csproj", "{F9AE3BC5-AEA1-4748-A7D6-AEAB0F61314B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HitchinExchange.Core", "HitchinExchange.Core\HitchinExchange.Core.csproj", "{DA6F7A96-E81B-44FD-B526-959FFCF7A95C}"
 EndProject

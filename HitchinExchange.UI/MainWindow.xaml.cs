@@ -19,9 +19,9 @@ namespace HitchinExchange.UI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, QuickFix.Application 
+    public partial class MainWindow //: Window, QuickFix.Application 
     {
-        SocketInitiator m_initiator;
+        //SocketInitiator m_initiator;
 
         public MainWindow()
         {
@@ -32,14 +32,14 @@ namespace HitchinExchange.UI
         {
             base.OnInitialized(e);
 
-            StartFixClient();
+            //StartFixClient();
         }
 
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
 
-            m_initiator.stop();
+            //_initiator.stop();
         }
 
         private void StartFixClient()
@@ -50,8 +50,8 @@ namespace HitchinExchange.UI
                 FileStoreFactory storeFactory = new FileStoreFactory(settings);
                 FileLogFactory logFactory = new FileLogFactory(settings);
                 MessageFactory messageFactory = new DefaultMessageFactory();
-                m_initiator = new SocketInitiator(this, storeFactory, settings, logFactory /*optional*/, messageFactory);
-                m_initiator.start();
+                //m_initiator = new SocketInitiator(this, storeFactory, settings, logFactory /*optional*/, messageFactory);
+              //  m_initiator.start();
             }
             catch (ConfigError e)
             {
@@ -73,7 +73,7 @@ namespace HitchinExchange.UI
 
         public void fromApp(Message value, SessionID sessionId)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(string.Format("onCreate called with {0}", value));
         }
 
         public void onCreate(SessionID value)
@@ -102,23 +102,23 @@ namespace HitchinExchange.UI
         } 
         #endregion
 
-        private void SendMessage(object sender, RoutedEventArgs e)
-        {
-            foreach( var session in m_initiator.getSessions())
-            {
-                QuickFix42.NewOrderSingle order = new QuickFix42.NewOrderSingle(
-                    new ClOrdID("DLF"),
-                    new HandlInst(HandlInst.MANUAL), 
-                    new Symbol("DLF"), 
-                    new Side(Side.BUY),
-                    new TransactTime(DateTime.Now), 
-                    new OrdType(OrdType.LIMIT));
+        //private void SendMessage(object sender, RoutedEventArgs e)
+        //{
+        //    foreach( var session in m_initiator.getSessions())
+        //    {
+        //        QuickFix42.NewOrderSingle order = new QuickFix42.NewOrderSingle(
+        //            new ClOrdID("DLF"),
+        //            new HandlInst(HandlInst.MANUAL), 
+        //            new Symbol("DLF"), 
+        //            new Side(Side.BUY),
+        //            new TransactTime(DateTime.Now), 
+        //            new OrdType(OrdType.LIMIT));
 
-                    order.set(new OrderQty(45));
-                    order.set(new Price(25.4d));
+        //            order.set(new OrderQty(45));
+        //            order.set(new Price(25.4d));
 
-                Session.sendToTarget(order, (SessionID)session); 
-            }
-        }
+        //        Session.sendToTarget(order, (SessionID)session); 
+        //    }
+        //}
     }
 }

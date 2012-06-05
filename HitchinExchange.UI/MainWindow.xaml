@@ -70,6 +70,6 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Button Grid.Row="3" HorizontalAlignment="Right" Click="SendMessage" IsEnabled="{Binding IsValidMessage}">Send</Button>
+        <!--<Button Grid.Row="3" HorizontalAlignment="Right" Click="SendMessage" IsEnabled="{Binding IsValidMessage}">Send</Button>-->
     </Grid>
 </Window>
