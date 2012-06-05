@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using HitchinExchange.Core.Clients;
 using System.Threading;
+using QuickFix;
 
 namespace HitchinExchange.UI
 {
@@ -169,6 +170,7 @@ namespace HitchinExchange.UI
 
 
             m_messageEndpoint.Subscribe("GUI", "Messages.ExecutionReport.*");
+            m_messageEndpoint.Subscribe("GUI", "Messages.Quote.*");
 
             m_messageEndpoint.MessageReceived += m_messageEndpoint_MessageReceived;
 
@@ -176,8 +178,16 @@ namespace HitchinExchange.UI
                 {
                     while (!m_cancelToken.IsCancellationRequested)
                     {
-                        m_messageEndpoint.Publish(new QuickFix42.NewOrderSingle());
-                        Thread.Sleep(1000);
+                        var msg = new QuickFix42.NewOrderSingle( new ClOrdID("clientOrderId"),
+                                                                 new HandlInst(HandlInst.AUTOEXECPUB),
+                                                                 new Symbol("VOD"),
+                                                                 new Side(Side.BUY),
+                                                                 new TransactTime(DateTime.Now),
+                                                                 new OrdType(OrdType.MARKET));
+
+
+                        m_messageEndpoint.Publish(msg);
+                        Thread.Sleep(10000);
                     }
                 }, m_cancelToken);
         }

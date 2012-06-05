@@ -29,7 +29,8 @@ namespace HitchinExchange.Core
 
             var newDomain = AppDomain.CreateDomain(type.FullName);
 
-            return newDomain.CreateInstanceAndUnwrap(type.Assembly.GetName().ToString(), type.FullName);
+            return newDomain.CreateInstanceAndUnwrap(type.Assembly.GetName().ToString(), 
+                                                     type.FullName);
         }
 
         public override IEnumerable<ImportDefinition> ImportDefinitions

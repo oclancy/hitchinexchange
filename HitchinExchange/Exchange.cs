@@ -10,7 +10,7 @@ using HitchinExchange.Core.Clients;
 
 namespace HitchinExchange
 {
-    public class Exchange : IDisposable
+    public class Exchange : IExchange
     {
         private bool m_disposed = false;
         private string m_appName;
@@ -20,22 +20,11 @@ namespace HitchinExchange
 
         public FixAcceptor Endpoint { get; set; }
 
-        public MessageEndpoint MsgEndpoint { get; set; }
+        public IMessageEndpoint MqEndpoint { get; set; }
 
         public Exchange() 
         {
             m_appName = Assembly.GetEntryAssembly().GetName().Name;
-            var cf = new ConnectionFactory();
-
-            //m_mqClientConn = cf.CreateConnection();
-
-            //m_mqModel = m_mqClientConn.CreateModel();
-
-            //m_mqModel.ExchangeDeclare("Hitchin", ExchangeType.Topic);
-
-            //m_mqModel.QueueDeclare("Exchange", true, false, false, null);
-
-            //m_mqModel.QueueBind("Exchange", "Hitchin", string.Empty);
 
             CreateFixEndpoint();
 
@@ -44,25 +33,24 @@ namespace HitchinExchange
 
         private void CreateMqSubscriber()
         {
-            MsgEndpoint = new MessageEndpoint("Hitchin");
+            MqEndpoint = new MessageEndpoint("Hitchin");
 
-            MsgEndpoint.MessageReceived += MsgEndpoint_MessageReceived;
+            MqEndpoint.MessageReceived += MqEndpoint_MessageReceived;
 
-            MsgEndpoint.RegisterPublishType(typeof(QuickFix42.ExecutionReport), "Messages.ExecutionReport.42");
+            MqEndpoint.RegisterPublishType(typeof(QuickFix42.ExecutionReport), "Messages.ExecutionReport.42");
 
-            MsgEndpoint.Subscribe("Exchange", "Messages.NewOrderSingle.*");
+            MqEndpoint.RegisterPublishType(typeof(QuickFix42.Quote), "Messages.Quote.42");
 
-            //MsgEndpoint.Subscribe("Exchange", "Message.ExecutionReport.*");
+            MqEndpoint.Subscribe("Exchange", "Messages.NewOrderSingle.*");
+
+            MqEndpoint.Subscribe("Exchange", "Message.ExecutionReport.*");
         }
 
-        void MsgEndpoint_MessageReceived( Message e)
+        void MqEndpoint_MessageReceived( Message e)
         {
             Console.WriteLine(e.ToString());
 
-            //if (e.getField(QuickFix.MsgType.FIELD) == "D")
-            //{
-                Session.sendToTarget(e);
-            //}
+            Endpoint.SendMessage(e);
         }
 
         private void CreateFixEndpoint()
@@ -70,20 +58,24 @@ namespace HitchinExchange
             Endpoint = new FixAcceptor(@"Exchange.cfg",
                                             "Exchange",
                                              OnMessage);
+
+            Endpoint.Start();
         }
 
         void OnMessage(Message message, SessionID sessionId)
         {
+            MqEndpoint.Publish(message);
+            return;
+
             var props = m_mqModel.CreateBasicProperties();
             props.Headers = new Dictionary<object, object>();
             props.Headers.Add("QFSessionId", sessionId.ToString());
-
-
         }
 
+        #region IDisposable
         public void Dispose()
         {
-            Dispose(true);   
+            Dispose(true);
         }
 
         protected void Dispose(bool isDisposing)
@@ -107,6 +99,7 @@ namespace HitchinExchange
         ~Exchange()
         {
             Dispose(false);
-        }
+        } 
+        #endregion
     }
 }
